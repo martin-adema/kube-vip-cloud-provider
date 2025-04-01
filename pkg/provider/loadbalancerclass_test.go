@@ -64,30 +64,30 @@ func TestSyncLoadBalancerIfNeeded(t *testing.T) {
 	}{
 		{
 			desc:              "udp service that wants LB",
-			service:           tu.NewService("udp-service", tu.TweakAddPorts(corev1.ProtocolUDP, 80, 0), tu.TweakAddLBClass(ptr.To(LoadbalancerClass))),
+			service:           tu.NewService("udp-service", tu.TweakAddPorts(corev1.ProtocolUDP, 80, 0), tu.TweakAddLBClass(ptr.To(DefaultLoadbalancerClass))),
 			expectNumOfUpdate: 1,
 			expectNumOfPatch:  1,
 		},
 		{
 			desc:              "tcp service that wants LB",
-			service:           tu.NewService("basic-service1", tu.TweakAddLBClass(ptr.To(LoadbalancerClass))),
+			service:           tu.NewService("basic-service1", tu.TweakAddLBClass(ptr.To(DefaultLoadbalancerClass))),
 			expectNumOfUpdate: 1,
 			expectNumOfPatch:  1,
 		},
 		{
 			desc:              "sctp service that wants LB",
-			service:           tu.NewService("sctp-service", tu.TweakAddPorts(corev1.ProtocolSCTP, 80, 0), tu.TweakAddLBClass(ptr.To(LoadbalancerClass))),
+			service:           tu.NewService("sctp-service", tu.TweakAddPorts(corev1.ProtocolSCTP, 80, 0), tu.TweakAddLBClass(ptr.To(DefaultLoadbalancerClass))),
 			expectNumOfUpdate: 1,
 			expectNumOfPatch:  1,
 		},
 		{
 			desc:             "service that needs cleanup",
-			service:          tu.NewService("basic-service2", tu.TweakAddLBIngress("8.8.8.8"), tu.TweakAddFinalizers(servicehelper.LoadBalancerCleanupFinalizer), tu.TweakAddDeletionTimestamp(time.Now()), tu.TweakAddLBClass(ptr.To(LoadbalancerClass))),
+			service:          tu.NewService("basic-service2", tu.TweakAddLBIngress("8.8.8.8"), tu.TweakAddFinalizers(servicehelper.LoadBalancerCleanupFinalizer), tu.TweakAddDeletionTimestamp(time.Now()), tu.TweakAddLBClass(ptr.To(DefaultLoadbalancerClass))),
 			expectNumOfPatch: 1,
 		},
 		{
 			desc:              "service with finalizer that wants LB",
-			service:           tu.NewService("basic-service3", tu.TweakAddFinalizers(servicehelper.LoadBalancerCleanupFinalizer), tu.TweakAddLBClass(ptr.To(LoadbalancerClass))),
+			service:           tu.NewService("basic-service3", tu.TweakAddFinalizers(servicehelper.LoadBalancerCleanupFinalizer), tu.TweakAddLBClass(ptr.To(DefaultLoadbalancerClass))),
 			expectNumOfUpdate: 1,
 		},
 	}
@@ -159,39 +159,39 @@ func TestSyncLoadBalancerIfNeededWithMultipleIpUse(t *testing.T) {
 	}{
 		{
 			desc:              "udp service that wants LB",
-			service:           tu.NewService("udp-service", tu.TweakDualStack(), tu.TweakAddPorts(corev1.ProtocolUDP, 123, 123), tu.TweakAddLBClass(ptr.To(LoadbalancerClass))),
+			service:           tu.NewService("udp-service", tu.TweakDualStack(), tu.TweakAddPorts(corev1.ProtocolUDP, 123, 123), tu.TweakAddLBClass(ptr.To(DefaultLoadbalancerClass))),
 			expectIP:          "10.0.0.2,2001::",
 			expectNumOfUpdate: 1,
 			expectNumOfPatch:  1,
 		},
 		{
 			desc:              "tcp service that wants LB",
-			service:           tu.NewService("basic-service1", tu.TweakDualStack(), tu.TweakAddPorts(corev1.ProtocolTCP, 345, 345), tu.TweakAddLBClass(ptr.To(LoadbalancerClass))),
+			service:           tu.NewService("basic-service1", tu.TweakDualStack(), tu.TweakAddPorts(corev1.ProtocolTCP, 345, 345), tu.TweakAddLBClass(ptr.To(DefaultLoadbalancerClass))),
 			expectIP:          "10.0.0.2,2001::1",
 			expectNumOfUpdate: 1,
 			expectNumOfPatch:  1,
 		},
 		{
 			desc:              "sctp service that wants LB",
-			service:           tu.NewService("sctp-service", tu.TweakAddPorts(corev1.ProtocolSCTP, 1234, 1234), tu.TweakAddLBClass(ptr.To(LoadbalancerClass))),
+			service:           tu.NewService("sctp-service", tu.TweakAddPorts(corev1.ProtocolSCTP, 1234, 1234), tu.TweakAddLBClass(ptr.To(DefaultLoadbalancerClass))),
 			expectIP:          "10.0.0.2",
 			expectNumOfUpdate: 1,
 			expectNumOfPatch:  1,
 		},
 		{
 			desc:             "service that needs cleanup",
-			service:          tu.NewService("basic-service2", tu.TweakAddLBIngress("8.8.8.8"), tu.TweakAddFinalizers(servicehelper.LoadBalancerCleanupFinalizer), tu.TweakAddDeletionTimestamp(time.Now()), tu.TweakAddLBClass(ptr.To(LoadbalancerClass))),
+			service:          tu.NewService("basic-service2", tu.TweakAddLBIngress("8.8.8.8"), tu.TweakAddFinalizers(servicehelper.LoadBalancerCleanupFinalizer), tu.TweakAddDeletionTimestamp(time.Now()), tu.TweakAddLBClass(ptr.To(DefaultLoadbalancerClass))),
 			expectNumOfPatch: 1,
 		},
 		{
 			desc:              "service with finalizer that wants LB",
-			service:           tu.NewService("basic-service3", tu.TweakAddFinalizers(servicehelper.LoadBalancerCleanupFinalizer), tu.TweakAddLBClass(ptr.To(LoadbalancerClass))),
+			service:           tu.NewService("basic-service3", tu.TweakAddFinalizers(servicehelper.LoadBalancerCleanupFinalizer), tu.TweakAddLBClass(ptr.To(DefaultLoadbalancerClass))),
 			expectIP:          "10.0.0.2",
 			expectNumOfUpdate: 1,
 		},
 		{
 			desc:              "now there is not enough ip, another tcp service that wants LB, but still could share ip with existing service",
-			service:           tu.NewService("basic-service4", tu.TweakAddPorts(corev1.ProtocolTCP, 8080, 8080), tu.TweakAddLBClass(ptr.To(LoadbalancerClass))),
+			service:           tu.NewService("basic-service4", tu.TweakAddPorts(corev1.ProtocolTCP, 8080, 8080), tu.TweakAddLBClass(ptr.To(DefaultLoadbalancerClass))),
 			expectNumOfUpdate: 1,
 			expectNumOfPatch:  1,
 			expectIP:          "10.0.0.2",
@@ -199,7 +199,7 @@ func TestSyncLoadBalancerIfNeededWithMultipleIpUse(t *testing.T) {
 		},
 		{
 			desc:              "another service who wants same port, get a new IP address",
-			service:           tu.NewService("basic-service5", tu.TweakAddPorts(corev1.ProtocolTCP, 80, 80), tu.TweakAddLBClass(ptr.To(LoadbalancerClass))),
+			service:           tu.NewService("basic-service5", tu.TweakAddPorts(corev1.ProtocolTCP, 80, 80), tu.TweakAddLBClass(ptr.To(DefaultLoadbalancerClass))),
 			expectNumOfUpdate: 1,
 			expectNumOfPatch:  1,
 			expectIP:          "10.0.0.3",
@@ -207,7 +207,7 @@ func TestSyncLoadBalancerIfNeededWithMultipleIpUse(t *testing.T) {
 		},
 		{
 			desc:             "another service who wants same port, no ip left, get no ip",
-			service:          tu.NewService("basic-service6", tu.TweakAddPorts(corev1.ProtocolTCP, 80, 80), tu.TweakAddLBClass(ptr.To(LoadbalancerClass))),
+			service:          tu.NewService("basic-service6", tu.TweakAddPorts(corev1.ProtocolTCP, 80, 80), tu.TweakAddLBClass(ptr.To(DefaultLoadbalancerClass))),
 			expectNumOfPatch: 1,
 			expectError:      true,
 		},
@@ -269,6 +269,7 @@ func TestNeedsUpdate(t *testing.T) {
 	testCases := []struct {
 		desc    string
 		service []*corev1.Service
+		lbClass string
 		expect  bool
 	}{
 		{
